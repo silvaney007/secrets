@@ -11,7 +11,7 @@ const findOrCreate = require("mongoose-findorcreate");
 
 const app = express();
 
-app.use(express.static("public"));
+app.use(express.static("assets"));
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({
     extended: true,
@@ -31,7 +31,9 @@ mongoose.set("useCreateIndex", true);
 
 const userSchema = new mongoose.Schema({
     email: String,
-    googleId:String
+    password: String,
+    googleId: String,
+    secret: String
 });
 
 userSchema.plugin(passportLocal);
@@ -69,17 +71,24 @@ app.get("/", function (req, res) {
     res.render("home");
 });
 
-
 app.get("/auth/google",
-passport.authenticate("google", {scope:["profile"]})
+    passport.authenticate("google", { scope: ["profile"] })
 );
 
 app.get("/auth/google/secrets",
     passport.authenticate("google", { failureRedirect: "/login" }),
-    function(req, res){
+    function (req, res) {
         res.redirect("/secrets");
     }
 );
+
+app.get("/submit", function (req, res) {
+    if (req.isAuthenticated()) {
+        res.render("submit");
+    } else {
+        res.redirect("/login");
+    }
+});
 
 
 
@@ -89,7 +98,6 @@ app.get("/login", function (req, res) {
 
 
 app.get("/register", function (req, res) {
-
     res.render("register");
 });
 
@@ -101,12 +109,36 @@ app.get("/logout", function (req, res) {
 
 app.get("/secrets", function (req, res) {
 
-    if (req.isAuthenticated()) {
-        res.render("secrets");
-    } else {
-        res.redirect("/login");
+    User.find({ "secret": { $ne: null } }, function (err, foundUser) {
+        if (err) {
+            console.log(err);
+        } else {
+            if (foundUser) {
+                res.render("secrets", { userSecrets: foundUser })
+            }
+        }
     }
+    );
 });
+
+app.post("/submit", function (req, res) {
+
+    const submittedScret = req.body.secret;
+
+    User.findById(req.user.id, function (err, foudUser) {
+        if (err) {
+            console.log(err);
+        } else {
+            if (foudUser) {
+                foudUser.secret = submittedScret;
+                foudUser.save(function () {
+                    res.redirect("/secrets");
+                });
+            }
+        }
+    })
+
+})
 
 
 app.post("/register", function (req, res) {
