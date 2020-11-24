@@ -57,7 +57,7 @@ passport.use(new GoogleStrategy({
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
     callbackURL: "https://s-e-c-r-e-t-s.herokuapp.com/auth/google/secrets",
-    userProfile: "https://www.googleapis.com/oauth2/v3/userinfo"
+    userProfile: "https://www.googleapis.com/oauth2/v2/userinfo"
 },
     function (accessToken, refreshToken, profile, cb) {
         User.findOrCreate({ googleId: profile.id }, function (err, user) {
@@ -175,6 +175,6 @@ app.post("/login", function (req, res) {
     })
 });
 
-app.listen(process.env.PORT , function () {
+app.listen(process.env.PORT || 3000 , function () {
     console.log("Server started");
 })
