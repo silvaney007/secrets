@@ -27,7 +27,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-mongoose.connect("process.env.MONGODB_URI || mongodb://localhost:27017/userDB", { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect("process.env.MONGODB_URI", { useNewUrlParser: true, useUnifiedTopology: true });
 mongoose.set("useCreateIndex", true);
 
 const userSchema = new mongoose.Schema({
@@ -175,13 +175,6 @@ app.post("/login", function (req, res) {
     })
 });
 
-
-let port = process.env.PORT;
-
-if(port == null || port == ""){
-    port= 3000;
-}
-
-app.listen(port , function () {
+app.listen(process.env.PORT , function () {
     console.log("Server started");
 })
